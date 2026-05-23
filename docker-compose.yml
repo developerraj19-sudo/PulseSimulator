@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database Service
+  postgres:
+    image: postgres:15-alpine
+    container_name: pulsesim-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: pulsesim
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql
+
+  # 2. Redis Cache Service
+  redis:
+    image: redis:7-alpine
+    container_name: pulsesim-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # 3. Neo4j Graph Service
+  neo4j:
+    image: neo4j:5-community
+    container_name: pulsesim-neo4j
+    restart: always
+    ports:
+      - "7474:7474" # HTTP Browser UI
+      - "7687:7687" # Bolt Protocol
+    environment:
+      NEO4J_AUTH: neo4j/password
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+
+  # 4. PulseSim Application API Service
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pulsesim-app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - ENV=production
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@postgres:5432/pulsesim
+      - OPENAI_API_KEY=mock-key
+    depends_on:
+      - postgres
+      - redis
+      - neo4j
+    volumes:
+      - ./frontend:/app/frontend # Mount frontend locally for hot-reload if styling changes
+
+volumes:
+  postgres_data:
+  redis_data:
+  neo4j_data:
+  neo4j_logs:

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseSim - AI Patient Simulator</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 1. Header Area -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-heart-pulse logo-icon"></i>
+                <div class="logo-text">
+                    <h1>PulseSim</h1>
+                    <span>Medical Student AI Simulator</span>
+                </div>
+            </div>
+            
+            <div class="setup-controls" id="setupControls">
+                <div class="input-group">
+                    <label for="studentEmail">Email</label>
+                    <input type="email" id="studentEmail" placeholder="student@pulsesim.edu" value="student@pulsesim.edu">
+                </div>
+                <div class="input-group">
+                    <label for="caseSelect">Clinical Case</label>
+                    <select id="caseSelect">
+                        <option value="case_anaphylaxis_001">Acute Anaphylaxis (Hard)</option>
+                        <option value="case_appendicitis_001">Acute Appendicitis (Intermediate)</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="btnStart"><i class="fa-solid fa-play"></i> Start Sim</button>
+            </div>
+
+            <div class="active-controls hidden" id="activeControls">
+                <div class="case-badge">
+                    <i class="fa-solid fa-clipboard-user"></i>
+                    <span id="activeCaseTitle">Case Loading...</span>
+                </div>
+                <button class="btn btn-danger" id="btnStop"><i class="fa-solid fa-stop"></i> End Sim</button>
+            </div>
+        </header>
+
+        <!-- 2. Main Simulation Area -->
+        <main class="sim-grid">
+            <!-- Left Column: Telemetry Dashboard -->
+            <section class="telemetry-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-chart-line"></i> Live Telemetry</h2>
+                    <span class="status-indicator blinking" id="vitalsStatus">Awaiting Sim...</span>
+                </div>
+
+                <div class="vitals-grid">
+                    <!-- Heart Rate Card -->
+                    <div class="vital-card" id="cardHr">
+                        <div class="vital-meta">
+                            <span class="label">Heart Rate</span>
+                            <i class="fa-solid fa-heart vital-icon heart-pulse" id="heartIcon"></i>
+                        </div>
+                        <div class="vital-value-group">
+                            <span class="value" id="valHr">--</span>
+                            <span class="unit">bpm</span>
+                        </div>
+                        <div class="vital-wave">
+                            <svg viewBox="0 0 100 30" class="ekg-svg">
+                                <path d="M0,15 L20,15 L25,5 L30,25 L35,15 L40,15 L45,15 L50,5 L55,25 L60,15 L80,15 L85,0 L88,30 L91,15 L100,15" 
+                                      fill="none" stroke="currentColor" stroke-width="1.5" class="ekg-path"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Blood Pressure Card -->
+                    <div class="vital-card" id="cardBp">
+                        <div class="vital-meta">
+                            <span class="label">Blood Pressure</span>
+                            <i class="fa-solid fa-gauge-high vital-icon"></i>
+                        </div>
+                        <div class="vital-value-group">
+                            <span class="value" id="valBp">--/--</span>
+                            <span class="unit">mmHg</span>
+                        </div>
+                        <div class="vital-desc" id="descBp">Status: Normal</div>
+                    </div>
+
+                    <!-- SpO2 Card -->
+                    <div class="vital-card" id="cardSpo2">
+                        <div class="vital-meta">
+                            <span class="label">Oxygen Saturation (SpO2)</span>
+                            <i class="fa-solid fa-lungs vital-icon"></i>
+                        </div>
+                        <div class="vital-value-group">
+                            <span class="value" id="valSpo2">--</span>
+                            <span class="unit">%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="fillSpo2" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Temperature Card -->
+                    <div class="vital-card" id="cardTemp">
+                        <div class="vital-meta">
+                            <span class="label">Temperature</span>
+                            <i class="fa-solid fa-thermometer vital-icon"></i>
+                        </div>
+                        <div class="vital-value-group">
+                            <span class="value" id="valTemp">--</span>
+                            <span class="unit">°C</span>
+                        </div>
+                        <div class="vital-desc" id="descTemp">Status: Normal</div>
+                    </div>
+
+                    <!-- Anxiety / Distress Card -->
+                    <div class="vital-card full-width" id="cardAnxiety">
+                        <div class="vital-meta">
+                            <span class="label">Patient Distress / Anxiety</span>
+                            <i class="fa-solid fa-face-frown-open vital-icon"></i>
+                        </div>
+                        <div class="vital-value-group">
+                            <span class="value" id="valAnxiety">--</span>
+                            <span class="unit">%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-bar-red" id="fillAnxiety" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clock and Budget Widget -->
+                <div class="telemetry-footer">
+                    <div class="widget">
+                        <i class="fa-solid fa-clock widget-icon"></i>
+                        <div class="widget-text">
+                            <span class="label">Simulated Time Elapsed</span>
+                            <span class="value" id="valSimTime">0 minutes</span>
+                        </div>
+                    </div>
+                    <div class="widget">
+                        <i class="fa-solid fa-wallet widget-icon"></i>
+                        <div class="widget-text">
+                            <span class="label">Remaining Budget</span>
+                            <span class="value" id="valBudget">$1,000.00</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: Interactive Chat & Intervention Panel -->
+            <section class="action-panel">
+                <!-- Chat Window -->
+                <div class="chat-container">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-comments"></i> Patient Dialogue</h2>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message system-msg">
+                            <i class="fa-solid fa-circle-info"></i> Enter a student email and select a clinical case to begin the simulation.
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chatInput" placeholder="Type your clinical question or bedside statement..." disabled>
+                        <button id="btnSend" disabled><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+
+                <!-- Intervention Hub -->
+                <div class="intervention-container">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-hand-holding-medical"></i> Clinical Interventions</h2>
+                    </div>
+                    
+                    <div class="tab-headers">
+                        <button class="tab-btn active" data-tab="meds">Medications</button>
+                        <button class="tab-btn" data-tab="labs">Labs</button>
+                        <button class="tab-btn" data-tab="imaging">Imaging</button>
+                        <button class="tab-btn" data-tab="consults">Consults</button>
+                    </div>
+
+                    <div class="tab-content active" id="tab-meds">
+                        <div class="intervention-grid">
+                            <button class="int-btn" data-id="epinephrine_im" disabled>
+                                <span class="title">Epinephrine 0.3mg IM</span>
+                                <span class="cost-time">$50.00 | +1m</span>
+                            </button>
+                            <button class="int-btn" data-id="albuterol_neb" disabled>
+                                <span class="title">Albuterol Nebulizer</span>
+                                <span class="cost-time">$30.00 | +10m</span>
+                            </button>
+                            <button class="int-btn" data-id="normal_saline_iv" disabled>
+                                <span class="title">IV Normal Saline 1L</span>
+                                <span class="cost-time">$80.00 | +15m</span>
+                            </button>
+                            <button class="int-btn" data-id="methylprednisolone_iv" disabled>
+                                <span class="title">IV Methylprednisolone</span>
+                                <span class="cost-time">$45.00 | +15m</span>
+                            </button>
+                            <button class="int-btn" data-id="morphine_iv" disabled>
+                                <span class="title">IV Morphine 4mg</span>
+                                <span class="cost-time">$40.00 | +5m</span>
+                            </button>
+                            <button class="int-btn" data-id="piperacillin_tazobactam_iv" disabled>
+                                <span class="title">IV Pip/Tazo 3.375g</span>
+                                <span class="cost-time">$120.00 | +30m</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tab-labs">
+                        <div class="intervention-grid">
+                            <button class="int-btn" data-id="complete_blood_count" disabled>
+                                <span class="title">Complete Blood Count (CBC)</span>
+                                <span class="cost-time">$65.00 | +20m</span>
+                            </button>
+                            <button class="int-btn" data-id="comprehensive_metabolic_panel" disabled>
+                                <span class="title">Metabolic Panel (CMP)</span>
+                                <span class="cost-time">$85.00 | +30m</span>
+                            </button>
+                            <button class="int-btn" data-id="arterial_blood_gas" disabled>
+                                <span class="title">Arterial Blood Gas (ABG)</span>
+                                <span class="cost-time">$110.00 | +10m</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tab-imaging">
+                        <div class="intervention-grid">
+                            <button class="int-btn" data-id="chest_xray" disabled>
+                                <span class="title">Chest X-Ray</span>
+                                <span class="cost-time">$120.00 | +15m</span>
+                            </button>
+                            <button class="int-btn" data-id="abdominal_ultrasound" disabled>
+                                <span class="title">Abdominal Ultrasound</span>
+                                <span class="cost-time">$220.00 | +45m</span>
+                            </button>
+                            <button class="int-btn" data-id="abdominal_ct" disabled>
+                                <span class="title">Abdominal CT Scan</span>
+                                <span class="cost-time">$550.00 | +60m</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tab-consults">
+                        <div class="intervention-grid">
+                            <button class="int-btn" data-id="surgical_consult" disabled>
+                                <span class="title">Surgical Consultation</span>
+                                <span class="cost-time">$300.00 | +15m</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Simulation Summary / Grading Modal -->
+    <div class="modal-overlay hidden" id="modalSummary">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-square-poll-vertical"></i> Clinical Performance Report</h2>
+            </div>
+            <div class="modal-body">
+                <div class="summary-meta-grid">
+                    <div class="meta-item">
+                        <span class="label">Simulation ID</span>
+                        <span class="value font-mono" id="summarySimId">--</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="label">Patient Name / Case</span>
+                        <span class="value" id="summaryCase">--</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="label">Case Outcome</span>
+                        <span class="value" id="summaryStatus">--</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="label">Total Cost Incurred</span>
+                        <span class="value" id="summaryCost">--</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="label">Time Elapsed</span>
+                        <span class="value" id="summaryTime">--</span>
+                    </div>
+                </div>
+
+                <div class="rubric-grades">
+                    <h3>Diagnostic Evaluator Breakdown (Beta)</h3>
+                    <div class="grade-row">
+                        <span class="criterion"><i class="fa-solid fa-circle-check"></i> Diagnostic Accuracy</span>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-bar-cyan" id="gradeAccuracy" style="width: 0%"></div>
+                        </div>
+                        <span class="grade-val" id="valGradeAccuracy">--</span>
+                    </div>
+                    <div class="grade-row">
+                        <span class="criterion"><i class="fa-solid fa-heart-pulse"></i> Empathy & Bedside Manner</span>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-bar-cyan" id="gradeEmpathy" style="width: 0%"></div>
+                        </div>
+                        <span class="grade-val" id="valGradeEmpathy">--</span>
+                    </div>
+                    <div class="grade-row">
+                        <span class="criterion"><i class="fa-solid fa-scale-balanced"></i> Financial Resource Efficiency</span>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill progress-bar-cyan" id="gradeResource" style="width: 0%"></div>
+                        </div>
+                        <span class="grade-val" id="valGradeResource">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="btnRestart"><i class="fa-solid fa-arrows-rotate"></i> Reset Case</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast hidden" id="toast">
+        <i class="fa-solid fa-info-circle toast-icon" id="toastIcon"></i>
+        <span id="toastMessage">Intervention Executed.</span>
+    </div>
+
+    <!-- JS Application Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
