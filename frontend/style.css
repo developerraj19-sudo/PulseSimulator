@@ -825,6 +825,12 @@ body {
 }
 
 /* Responsive Scaling */
+@media(max-width: 1200px) {
+    .sim-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 @media(max-width: 900px) {
     .sim-grid {
         grid-template-columns: 1fr;
@@ -843,6 +849,47 @@ body {
     
     .app-header {
         flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+    
+    .setup-controls, .active-controls {
+        flex-direction: column;
+        width: 100%;
         gap: 12px;
+    }
+    
+    .setup-controls .input-group, .setup-controls .btn {
+        width: 100%;
+    }
+}
+
+@media(max-width: 600px) {
+    .vitals-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .vital-card.full-width {
+        grid-column: span 1;
+    }
+    
+    .telemetry-footer {
+        flex-direction: column;
+    }
+    
+    .tab-headers {
+        flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+        flex: 1 1 40%;
+    }
+    
+    .intervention-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-meta-grid {
+        grid-template-columns: 1fr;
     }
 }
