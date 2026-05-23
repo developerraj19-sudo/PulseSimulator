@@ -27,27 +27,28 @@ The platform wraps a rigorous **real-time vitals state machine**, dynamic **grap
 
 ## 📂 Project Structure
 
-```
-d:/PulseSim/
+```text
+PulseSim/
+├── frontend/                     # Translucent Glassmorphic Client
+│   ├── index.html                # Layout structure, SVGs, modals
+│   ├── style.css                 # Responsive CSS grid, neon vital alerts
+│   └── app.js                    # WS listeners, state recovery logic
+├── backend/                      # FastAPI Asynchronous State Server
+│   ├── requirements.txt          # Python dependencies
+│   ├── .env.example              # Variables template
+│   ├── app/
+│   │   ├── main.py               # FastAPI application & websocket managers
+│   │   ├── config.py             # Settings configurations
+│   │   ├── db/                   # Async Database Interfaces
+│   │   ├── schemas/              # Request/Response models
+│   │   └── services/             # Core Engine Computations
+│   └── tests/                    # Automated Verification Suites
 ├── scripts/
 │   ├── init_neo4j.cypher         # Neo4j constraints & case data
 │   └── init_postgres.sql         # PostgreSQL tables and default users
-└── backend/
-    ├── requirements.txt          # Python dependencies
-    ├── .env.example              # Variables template
-    ├── app/
-    │   ├── main.py               # FastAPI application & websocket managers
-    │   ├── config.py             # Settings configurations
-    │   ├── db/
-    │   │   ├── neo4j_client.py   # Neo4j query wrappers
-    │   │   ├── postgres_client.py# PostgreSQL logging clients
-    │   │   └── redis_client.py   # Redis live state handlers
-    │   ├── schemas/
-    │   │   └── sim_schemas.py    # Request/Response models
-    │   └── services/
-    │       └── telemetry.py      # Core vital degradation calculations
-    └── tests/
-        └── test_telemetry.py     # State machine unit tests
+├── docker-compose.yml            # Docker orchestration
+├── codebase_architecture.md      # Detailed architecture blueprint
+└── run_pulsesim.ps1              # PowerShell launcher bootstrap
 ```
 
 ---
