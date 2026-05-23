@@ -77,12 +77,12 @@ graph TD
     FastAPI -->|2. Create Session UUID| Postgres
     FastAPI -->|3. Seed Live Vitals| Redis
     
-    UI -->|Intervention / Chat| FastAPI
+    UI -->|Intervention or Chat| FastAPI
     FastAPI -->|Validate Symptoms| Neo4j
     FastAPI -->|Mutate Telemetry| Redis
-    FastAPI -->|Log Chats & Costs| Postgres
+    FastAPI -->|Log Chats and Costs| Postgres
     
-    FastAPI -->|Real-time Telemetry (1Hz)| UI
+    FastAPI -->|Real-time Telemetry 1Hz| UI
 ```
 
 1. **Simulation Seeding**:
